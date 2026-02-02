@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LockIn - Site Blocked</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      max-width: 500px;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 20px;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+    .stats {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+    .stat {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 Stay Focused!</h1>
+    <p>This site is blocked to help you stay productive.</p>
+    <div class="stats">
+      <div class="stat">Sites blocked today: <strong id="blocked-count">0</strong></div>
+      <div class="stat">Current streak: <strong id="streak">0</strong> days</div>
+    </div>
+  </div>
+  <script>
+    chrome.storage.local.get(['blockedToday', 'streak'], (result) => {
+      document.getElementById('blocked-count').textContent = result.blockedToday || 0;
+      document.getElementById('streak').textContent = result.streak || 0;
+    });
+  </script>
+</body>
+</html>
