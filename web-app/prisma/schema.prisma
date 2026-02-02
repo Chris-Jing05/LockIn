@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  preferences   UserPreferences?
+  activityLogs  ActivityLog[]
+  streaks       Streak[]
+}
+
+model UserPreferences {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  focusModeEnabled Boolean  @default(true)
+  whitelist       String   @default("[]") // JSON array of allowed domains
+  blacklist       String   @default("[]") // JSON array of blocked domains
+
+  // YouTube category blocking
+  youtubeBlockedCategories String @default("[]") // JSON array of blocked categories
+
+  // Focus schedule (JSON stored as string, or could be separate model)
+  scheduleStart   String?  // e.g., "09:00"
+  scheduleEnd     String?  // e.g., "17:00"
+
+  syncToken       String?  @unique // For extension sync
+  lastSyncAt      DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ActivityLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  domain          String
+  blockedUrl      String
+  wasBlocked      Boolean  @default(true)
+  timestamp       DateTime @default(now())
+
+  // For analytics
+  category        String?  // "entertainment", "education", "productivity"
+
+  @@index([userId, timestamp])
+}
+
+model Streak {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  lastActiveDate  DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId])
+}
+
+model ContentClassification {
+  id              String   @id @default(cuid())
+  url             String   @unique
+
+  // For YouTube videos
+  videoId         String?
+  title           String?
+  channelName     String?
+
+  isEducational   Boolean
+  category        String?  // "gaming", "tutorial", "vlog", etc.
+  confidence      Float    // 0.0 to 1.0
+  classifiedBy    String   // "ai" or "manual"
+
+  // Manual override
+  manualOverride  Boolean  @default(false)
+  overriddenBy    String?  // userId who made the override
+
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime // Cache expiration
+
+  @@index([url])
+  @@index([videoId])
+}
